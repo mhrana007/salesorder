@@ -1,0 +1,43 @@
+﻿@page "/orderlist"
+@using SalesOrder.Shared
+@inject HttpClient _httpClient
+<h1>Order Detail</h1>
+<div>
+    <a href="/addorder"> Create New Order</a>
+    @if (orderList != null)
+    {
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th width = "30%">Name</th>
+                    <th width = "20%">State</th>
+                    <th width = "30%">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in orderList)
+                {
+                    <tr>
+                        <td>
+                            @p.OrderName
+                        </td>
+                    <td>@p.State</td>
+                    <td>
+                        <a href="/editorder/@p.Id">Edit</a> |
+                        <a href="/deleteorder/@p.Id">Delete</a>
+                    </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+@code {
+    List<OrderViewModel> orderList = new List<OrderViewModel>();
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await _httpClient.GetAsync("api/order/getallorder");
+        response.EnsureSuccessStatusCode();
+        orderList = await response.Content.ReadFromJsonAsync<List<OrderViewModel>>();
+    }
+}

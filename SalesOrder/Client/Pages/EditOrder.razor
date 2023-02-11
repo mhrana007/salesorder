@@ -1,0 +1,148 @@
+﻿@page "/editorder/{Id}"
+@using SalesOrder.Shared
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<h2>Edit Order</h2>
+<div class="row">
+        <div class="col-md-6">
+                <div class="form-group">
+                        <label for="FirstName"> Order Name *</label>
+                        <input form="FirstName" class="form-control" @bind="@order.OrderName" />
+                    </div>
+            </div>
+        <div class="col-md-6">
+                <div class="form-group">
+                        <label for="LastName"> State Name *</label>
+                        <input form="LastName" class="form-control" @bind="@order.State" />
+                    </div>
+            </div>
+</div>
+<div class="row">
+    <div class="">
+        <div class="form-group">
+            <button type="button" class="btn btn-secondary" style="margin:15px;"
+                    @onclick="@(() => order.Windows.Add(new WindowViewModel()))">
+                Add Window
+            </button>
+        </div>
+</div>
+                
+</div>
+        @for (var i = 0; i < order.Windows.Count; i++)
+        {
+            var index = i;
+            var win = order.Windows[i];
+
+           <div  class="row">
+                <h5>Window @(i+1)</h5>
+            <div class="col-md-4">
+                <div class="form-group">
+                        <label> Window Name:</label>
+                        <input form="windowname" class="form-control" @bind="@win.WindowName" />
+                    </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                        <label> Quantity:</label>
+                        <input form="quantity" class="form-control" @bind="@win.Quantity" />
+                    </div>
+            </div>
+             <div class="col-md-4">
+                <div class="form-group">
+                       <button type="button" class="btn btn-danger" style="margin:15px;"
+                    @onclick="@(() => order.Windows.RemoveAt(index))">
+                Remove Window
+            </button>
+                    </div>
+            </div>
+            
+
+            
+           </div>
+
+           <div class="row">
+               <div class="form-group">
+            <button type="button" class="btn btn-secondary" style="margin:15px;"
+                    @onclick="@(() => win.SubElements.Add(new ElementViewModel()))">
+                Add Element
+            </button>
+        </div>
+           </div>
+            @for (var j = 0; j < win.SubElements.Count; j++)
+            {
+
+                var indexelement = j;
+            var element = win.SubElements[j];
+            <h5>Element @(j+1)</h5>
+             <div class="row">
+                 <div class="col-md-3">
+                <div class="form-group">
+                        <label> Type:</label>
+                        <input form="type" class="form-control" @bind="@element.Type" />
+                    </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                        <label> Width:</label>
+                        <input form="width" class="form-control" @bind="@element.Width" />
+                    </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                        <label> Height:</label>
+                        <input form="height" class="form-control" @bind="@element.Height" />
+                    </div>
+            </div>
+             <div class="col-md-3">
+                <div class="form-group">
+                        <button type="button" class="btn btn-danger" style="margin:15px;"
+                    @onclick="@(() => win.SubElements.Remove(element))">
+                Remove Element
+            </button>
+                    </div>
+            </div>
+            
+                 </div>
+            
+
+}
+        }
+    
+<div class="row">
+        <div class="col-md-2">
+                <div class="form-group">
+                        <input type="button" class="btn btn-primary" @onclick="@Save" value="Save" />
+                    </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                        <input type="button" class="btn" @onclick="@Cancel" value="Cancel" />
+                    </div>
+            </div>
+</div>
+@code {
+    [Parameter]
+    public string Id{ get; set; }
+    OrderViewModel order = new OrderViewModel();
+    protected override async Task OnInitializedAsync()
+    {
+        order = await Http.GetFromJsonAsync<OrderViewModel>("api/order/" + Id);
+        }
+        protected async Task Save()
+        {
+            var response = await Http.PutAsJsonAsync("api/order/" + Id, @order);
+            bool orderResponse = await response.Content.ReadFromJsonAsync<bool>();
+                if (orderResponse)
+                {
+                    await JsRuntime.InvokeVoidAsync("alert", "Updated Successfully!");
+                    NavigationManager.NavigateTo("orderlist");
+                }
+            }
+            void Cancel()
+            {
+                NavigationManager.NavigateTo("orderlist");
+            }
+        }
+        

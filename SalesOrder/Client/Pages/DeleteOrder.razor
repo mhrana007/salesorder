@@ -1,0 +1,123 @@
+﻿@page "/deleteorder/{Id}"
+@using SalesOrder.Shared
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+<h2>Delete Order</h2>
+@if(order != null)
+{
+<p>Are you sure you want to delete this order with Name: <b>@order.OrderName</b></p><br />
+<div class="row">
+       <table class="table table-bordered">
+               <tr>
+                       <th>Name</th>
+                        <th>State</th>
+                       
+                   </tr>
+               <tr>
+                      <td>@order.OrderName</td>
+                       <td>@order.State</td>
+                   </tr>
+           </table>
+</div>
+<div class="row">
+    <table class="table table-bordered">
+        <tr rowspan="2">
+                    <th></th>
+                    <th>Window</th>
+                    <th></th>
+                </tr>
+        <tr>
+            <th>Window Name</th>
+            <th>Quantity</th>
+            <th></th>
+        </tr>
+         @for (int i = 0; i < order.Windows.Count; i++)
+            {
+                <tr>
+                    <td>@order.Windows[i].WindowName</td>
+                    <td>@order.Windows[i].Quantity</td>
+                    <td>
+                        @*<button type="button" style="color: black;background: antiquewhite;" class="btn btn-danger" @onclick="() => DeleteWindow(order.Windows[i].Id)">
+                Remove Window
+            </button>*@
+                    </td>
+                </tr>
+                <tr rowspan="2">
+                    <th></th>
+                    <th>Element</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <th>Type</th>
+                    <th>Width</th>
+                    <th>Height</th>
+                </tr>
+                @for (var j = 0; j < order.Windows[i].SubElements.Count; j++)
+            {
+                    <tr>
+                        <td>@order.Windows[i].SubElements[j].Type</td>
+                        <td>@order.Windows[i].SubElements[j].Width</td>
+                        <td>@order.Windows[i].SubElements[j].Height</td>
+                        <td>
+                        @*<button type="button" class="btn btn-danger"  style="color: black;background: antiquewhite;"
+                    @onclick="() => DeleteElement(order.Windows[i].SubElements[j].Id)">
+                    
+                Remove Element
+            </button>*@
+                    </td>
+                    </tr>
+                }
+            }
+        </table>
+</div>
+}
+<div class="row">
+        <div class="col-md-4">
+                <div class="form-group">
+                        <input type="button" class="btn btn-primary" @onclick="@Delete" value="Delete" />
+                        <input type="button" class="btn" @onclick="@Cancel" value="Cancel" />
+                    </div>
+            </div>
+</div>
+@code {
+    [Parameter]
+    public string Id{ get; set; }
+    OrderViewModel order = new OrderViewModel();
+    protected override async Task OnInitializedAsync()
+    {
+        order = await Http.GetFromJsonAsync<OrderViewModel>("api/order/" + Id);
+        }
+        protected async Task Delete()
+        {
+            var response = await Http.DeleteAsync("api/order/" + Id);
+            bool deleteResponse = await response.Content.ReadFromJsonAsync<bool>();
+                if (deleteResponse)
+                {
+                    await JsRuntime.InvokeVoidAsync("alert", "Deleted Successfully!");
+                    NavigationManager.NavigateTo("orderlist");
+                }
+            }
+            protected async Task DeleteWindow(int windowid)
+        {
+            var response = await Http.DeleteAsync("api/order/deletewindow/{id}" + windowid);
+            bool deleteResponse = await response.Content.ReadFromJsonAsync<bool>();
+                if (deleteResponse)
+                {
+                    await JsRuntime.InvokeVoidAsync("alert", "Deleted Window Successfully!");
+                }
+            }
+            protected async Task DeleteElement(int elementid)
+        {
+            var response = await Http.DeleteAsync("api/order/deleteelement/{id}" + elementid);
+            bool deleteResponse = await response.Content.ReadFromJsonAsync<bool>();
+                if (deleteResponse)
+                {
+                    await JsRuntime.InvokeVoidAsync("alert", "Deleted Element Successfully!");
+                }
+            }
+            void Cancel()
+            {
+                NavigationManager.NavigateTo("orderlist");
+            }
+        }

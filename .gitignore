@@ -1,0 +1,12 @@
+/SalesOrder/Shared/bin
+/SalesOrder/Shared/obj
+/SalesOrder/Client/obj
+/SalesOrder/Client/bin
+/SalesOrder/Server/obj
+/SalesOrder/Server/bin
+/SalesOrder/.vs
+/DAL/Migrations
+/DAL/obj
+/DAL/bin
+/BLL/obj
+/BLL/bin
